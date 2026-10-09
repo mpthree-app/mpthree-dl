@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mpthree-dl</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo"><img src="logo.svg" alt="" width="20" height="20"><span>mpthree-dl</span></div>
+  <nav id="tabs">
+    <button data-tab="search" class="on" data-i18n="nav.search"></button>
+    <button data-tab="link" data-i18n="nav.link"></button>
+    <button data-tab="queue"><span data-i18n="nav.queue"></span><span id="badge" hidden></span></button>
+    <button data-tab="settings" data-i18n="nav.settings"></button>
+  </nav>
+  <div class="grow"></div>
+  <div class="sws"><button class="sw" data-sw="lang" aria-haspopup="menu" data-i18n-title="language"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></button><button class="sw" data-sw="quality" aria-haspopup="menu" data-i18n-title="quality.tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg><span class="sw-val"></span></button></div>
+</header>
+
+<div id="banner" hidden></div>
+
+<a class="ad" id="ad" data-act="open-site" role="link" tabindex="0">
+  <span class="ad-mark"><img src="ad-logo.svg" alt="" width="18" height="18"></span>
+  <span class="ad-body">
+    <span class="ad-top"><b class="ad-title" data-i18n="ad.title"></b><span class="ad-badge" data-i18n="ad.badge"></span></span>
+    <span class="ad-text" data-i18n="ad.text"></span>
+  </span>
+  <span class="ad-cta" data-i18n="ad.cta"></span>
+  <button class="ad-x" id="ad-x" data-i18n-title="ad.hide" aria-label="Hide" data-stop="1">&times;</button>
+</a>
+
+<main>
+  <section id="view-search">
+    <div id="search-bar">
+      <div class="bar">
+        <input id="q" type="search" data-i18n-ph="search.ph" autocomplete="off" spellcheck="false">
+        <button class="btn primary" id="q-go" data-i18n="search.go"></button>
+      </div>
+      <div class="bar sub">
+        <div class="seg" id="seg-source">
+          <button data-v="catalog" class="on">iTunes</button>
+          <button data-v="deezer">Deezer</button>
+          <button data-v="youtube">YouTube</button>
+          <button data-v="ytmusic">YT Music</button>
+          <button data-v="soundcloud">SoundCloud</button>
+        </div>
+        <div class="seg" id="seg-kind">
+          <button data-v="artists" class="on" data-i18n="kind.artists"></button>
+          <button data-v="releases" data-i18n="kind.releases"></button>
+          <button data-v="songs" data-i18n="kind.songs"></button>
+        </div>
+      </div>
+    </div>
+    <div id="search-body"></div>
+  </section>
+
+  <section id="view-link" hidden>
+    <div class="bar">
+      <textarea id="link-in" rows="2" data-i18n-ph="link.ph" spellcheck="false"></textarea>
+      <button class="btn primary" id="link-go" data-i18n="link.fetch"></button>
+    </div>
+    <label class="chk-line"><input type="checkbox" id="link-num"> <span data-i18n="link.number"></span></label>
+    <div id="link-body"></div>
+  </section>
+
+  <section id="view-queue" hidden>
+    <div class="toolbar">
+      <div id="queue-summary" class="muted"></div>
+      <div class="grow"></div>
+      <button class="btn" id="q-folder" data-i18n="queue.open"></button>
+      <button class="btn" id="q-cancel" data-i18n="queue.cancelAll"></button>
+      <button class="btn" id="q-clear" data-i18n="queue.clear"></button>
+    </div>
+    <div id="jobs"></div>
+    <div id="jobs-empty" class="empty" data-i18n="queue.empty"></div>
+  </section>
+
+  <section id="view-settings" hidden>
+    <div class="form">
+      <div class="field">
+        <label data-i18n="s.dir"></label>
+        <div class="bar">
+          <input id="s-dir" readonly>
+          <button class="btn" id="s-browse" data-i18n="s.browse"></button>
+          <button class="btn" id="s-open" data-i18n="s.open"></button>
+        </div>
+      </div>
+      <label class="chk-line"><input type="checkbox" id="s-org"> <span data-i18n="s.org"></span></label>
+      <label class="chk-line"><input type="checkbox" id="s-skip"> <span data-i18n="s.skip"></span></label>
+      <div class="field">
+        <button class="btn" id="s-scan" data-i18n="s.scan"></button> <span id="s-scan-res" class="muted"></span>
+      </div>
+      <label class="chk-line"><input type="checkbox" id="s-tray"> <span data-i18n="s.tray"></span></label>
+      <div class="field two">
+        <div>
+          <label data-i18n="s.conc"></label>
+          <input id="s-conc" type="number" min="1" max="8">
+        </div>
+        <div>
+          <label data-i18n="s.country"></label>
+          <input id="s-country" maxlength="2" placeholder="US">
+        </div>
+      </div>
+      <div class="field two">
+        <div>
+          <label data-i18n="s.retries"></label>
+          <input id="s-retries" type="number" min="0" max="10">
+        </div>
+        <div></div>
+      </div>
+      <div class="field">
+        <label><span data-i18n="s.cookies"></span> <span class="muted" data-i18n="s.cookies.hint"></span></label>
+        <select id="s-cookies">
+          <option value="" data-i18n="s.none"></option>
+          <option>chrome</option><option>firefox</option><option>edge</option>
+          <option>brave</option><option>opera</option><option>vivaldi</option>
+        </select>
+      </div>
+      <div class="field">
+        <label data-i18n="s.extra"></label>
+        <input id="s-extra" placeholder="--proxy socks5://127.0.0.1:1080" spellcheck="false">
+      </div>
+
+      <h3 data-i18n="s.tools"></h3>
+      <div class="tool"><div><b>yt-dlp</b><div class="muted" id="t-ytdlp">…</div></div><div class="grow"></div><button class="btn" id="t-ytdlp-btn">Install</button></div>
+      <div class="tool"><div><b>ffmpeg</b><div class="muted" id="t-ffmpeg">…</div></div><div class="grow"></div><button class="btn" id="t-ffmpeg-btn">Install</button></div>
+
+      <h3 data-i18n="s.aboutq"></h3>
+      <p class="muted" data-i18n-html="s.aboutq.text"></p>
+    </div>
+  </section>
+</main>
+
+<div id="player" hidden>
+  <img id="p-art" alt="">
+  <div class="p-meta"><div id="p-title"></div><div id="p-sub" class="muted"></div></div>
+  <button class="icon pv" id="p-toggle"></button>
+  <span id="p-cur" class="dur">0:00</span>
+  <input id="p-seek" type="range" min="0" max="1000" value="0">
+  <span id="p-dur" class="dur">0:00</span>
+  <button class="icon" id="p-close" title="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+<div id="onboard" hidden>
+  <header class="ob-head">
+    <img src="logo.svg" alt="" width="22" height="22">
+    <div class="grow"></div>
+    <div class="sws"><button class="sw" data-sw="lang" aria-haspopup="menu" data-i18n-title="language"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></button><button class="sw" data-sw="quality" aria-haspopup="menu" data-i18n-title="quality.tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg><span class="sw-val"></span></button></div>
+  </header>
+
+  <main class="ob-main">
+    <div class="ob-inner">
+      <section class="ob-step" data-step="0">
+        <img class="ob-big" src="logo.svg" alt="" width="56" height="56">
+        <h1 data-i18n="ob.welcome.title"></h1>
+        <p class="ob-lead" data-i18n="ob.welcome.sub"></p>
+      </section>
+
+      <section class="ob-step" data-step="1" hidden>
+        <h1 data-i18n="ob.title"></h1>
+        <p class="ob-lead" data-i18n="ob.sub"></p>
+        <div class="seg ob-seg" id="ob-seg">
+          <button data-v="artist" class="on" data-i18n="ob.artist"></button>
+          <button data-v="link" data-i18n="ob.link"></button>
+        </div>
+        <div id="ob-artist">
+          <input id="ob-q" type="search" data-i18n-ph="ob.q" autocomplete="off" spellcheck="false">
+          <div id="ob-results"></div>
+        </div>
+        <div id="ob-link" hidden>
+          <textarea id="ob-in" rows="4" data-i18n-ph="ob.in" spellcheck="false"></textarea>
+        </div>
+        <div class="ob-folder">
+          <span class="muted"><span data-i18n="ob.saving"></span> <span id="ob-dir"></span></span>
+          <button class="btn ghost" id="ob-change" data-i18n="ob.change"></button>
+        </div>
+        <a class="ob-ad" data-act="open-site" role="link" tabindex="0"><img src="ad-logo.svg" alt="" width="16" height="16"><b data-i18n="ad.title"></b><span data-i18n="ad.text"></span></a>
+      </section>
+    </div>
+  </main>
+
+  <footer class="ob-foot">
+    <div class="ob-btns">
+      <button class="btn ghost ob-pill" id="ob-back"><span aria-hidden="true">←</span> <span data-i18n="ob.back"></span></button>
+      <button class="btn primary ob-pill" id="ob-primary"></button>
+    </div>
+    <div class="ob-sec"><button class="btn ghost" id="ob-skip" data-i18n="ob.skip"></button></div>
+    <ol class="dots" id="ob-dots"><li></li><li></li></ol>
+  </footer>
+</div>
+<div id="toast" hidden></div>
+<script src="i18n.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
