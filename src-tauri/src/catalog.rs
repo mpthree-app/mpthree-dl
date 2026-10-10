@@ -325,7 +325,7 @@ mod deezer {
     async fn get(app: &AppHandle, path: &str, params: &[(&str, String)]) -> Result<Value, String> {
         let v = get_json(app, &format!("{API}/{path}"), params).await?;
         if v["error"].is_object() {
-            return Err(format!("Deezer: {}", s(&v["error"], "message")));
+            return Err(format!("Catalog: {}", s(&v["error"], "message")));
         }
         Ok(v)
     }

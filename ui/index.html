@@ -7,29 +7,20 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <div class="logo"><img src="logo.svg" alt="" width="20" height="20"><span>mpthree-dl</span></div>
+<header data-tauri-drag-region>
+  <div class="logo" data-tauri-drag-region><img src="logo.svg" alt="" width="20" height="20" data-tauri-drag-region><span data-tauri-drag-region>mpthree-dl</span></div>
   <nav id="tabs">
-    <button data-tab="search" class="on" data-i18n="nav.search"></button>
-    <button data-tab="link" data-i18n="nav.link"></button>
-    <button data-tab="queue"><span data-i18n="nav.queue"></span><span id="badge" hidden></span></button>
-    <button data-tab="settings" data-i18n="nav.settings"></button>
+    <i class="nav-pill" aria-hidden="true"></i>
+    <button data-tab="search" class="on"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span data-i18n="nav.search"></span></button>
+    <button data-tab="link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><span data-i18n="nav.link"></span></button>
+    <button data-tab="queue"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg><span data-i18n="nav.queue"></span><span id="badge" hidden></span></button>
+    <button data-tab="settings"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span data-i18n="nav.settings"></span></button>
   </nav>
-  <div class="grow"></div>
-  <div class="sws"><button class="sw" data-sw="lang" aria-haspopup="menu" data-i18n-title="language"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></button><button class="sw" data-sw="quality" aria-haspopup="menu" data-i18n-title="quality.tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg><span class="sw-val"></span></button></div>
+  <div class="hr" data-tauri-drag-region><div class="sws"><button class="sw" data-sw="lang" aria-haspopup="menu" data-i18n-title="language"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></button><button class="sw" data-sw="quality" aria-haspopup="menu" data-i18n-title="quality.tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg><span class="sw-val"></span></button></div>
+  <div class="wc"></div></div>
 </header>
 
 <div id="banner" hidden></div>
-
-<a class="ad" id="ad" data-act="open-site" role="link" tabindex="0">
-  <span class="ad-mark"><img src="ad-logo.svg" alt="" width="18" height="18"></span>
-  <span class="ad-body">
-    <span class="ad-top"><b class="ad-title" data-i18n="ad.title"></b><span class="ad-badge" data-i18n="ad.badge"></span></span>
-    <span class="ad-text" data-i18n="ad.text"></span>
-  </span>
-  <span class="ad-cta" data-i18n="ad.cta"></span>
-  <button class="ad-x" id="ad-x" data-i18n-title="ad.hide" aria-label="Hide" data-stop="1">&times;</button>
-</a>
 
 <main>
   <section id="view-search">
@@ -40,11 +31,11 @@
       </div>
       <div class="bar sub">
         <div class="seg" id="seg-source">
-          <button data-v="catalog" class="on">iTunes</button>
-          <button data-v="deezer">Deezer</button>
-          <button data-v="youtube">YouTube</button>
-          <button data-v="ytmusic">YT Music</button>
-          <button data-v="soundcloud">SoundCloud</button>
+          <button data-v="catalog" class="on" data-i18n="src.cat"></button>
+          <button data-v="deezer" data-i18n="src.cat2"></button>
+          <button data-v="youtube" data-i18n="src.video"></button>
+          <button data-v="ytmusic" data-i18n="src.music"></button>
+          <button data-v="soundcloud" data-i18n="src.audio"></button>
         </div>
         <div class="seg" id="seg-kind">
           <button data-v="artists" class="on" data-i18n="kind.artists"></button>
@@ -78,57 +69,123 @@
   </section>
 
   <section id="view-settings" hidden>
-    <div class="form">
-      <div class="field">
-        <label data-i18n="s.dir"></label>
-        <div class="bar">
-          <input id="s-dir" readonly>
-          <button class="btn" id="s-browse" data-i18n="s.browse"></button>
-          <button class="btn" id="s-open" data-i18n="s.open"></button>
+    <div class="st">
+      <aside class="st-nav">
+        <label class="st-search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="st-q" type="search" data-i18n-ph="s.filter" autocomplete="off" spellcheck="false"></label>
+        <div id="st-menu"></div>
+        <p class="st-none muted" id="st-none" data-i18n="s.nomatch" hidden></p>
+      </aside>
+      <div class="st-body">
+        <h2 id="st-title"></h2>
+        <div id="st-panes">
+    <div class="st-pane" data-pane="downloads">
+      <div class="ssec"><h3 data-i18n="s.files"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.dir"></span><span class="sh" data-i18n="s.dir.hint"></span></span>
+          <span class="sc wide"><input id="s-dir" readonly><button class="btn" id="s-browse" data-i18n="s.browse"></button><button class="btn" id="s-open" data-i18n="s.open"></button></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.org"></span><span class="sh" data-i18n="s.org.hint"></span></span>
+          <span class="sc"><input type="checkbox" class="tg" id="s-org"></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8z"/><path d="M19 5v14"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.skip"></span><span class="sh" data-i18n="s.skip.hint"></span></span>
+          <span class="sc"><input type="checkbox" class="tg" id="s-skip"></span>
         </div>
       </div>
-      <label class="chk-line"><input type="checkbox" id="s-org"> <span data-i18n="s.org"></span></label>
-      <label class="chk-line"><input type="checkbox" id="s-skip"> <span data-i18n="s.skip"></span></label>
-      <div class="field">
-        <button class="btn" id="s-scan" data-i18n="s.scan"></button> <span id="s-scan-res" class="muted"></span>
-      </div>
-      <label class="chk-line"><input type="checkbox" id="s-tray"> <span data-i18n="s.tray"></span></label>
-      <div class="field two">
-        <div>
-          <label data-i18n="s.conc"></label>
-          <input id="s-conc" type="number" min="1" max="8">
-        </div>
-        <div>
-          <label data-i18n="s.country"></label>
-          <input id="s-country" maxlength="2" placeholder="US">
+      <div class="ssec"><h3 data-i18n="s.library"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.scan"></span><span class="sh" data-i18n="s.scan.hint"></span></span>
+          <span class="sc"><span id="s-scan-res" class="muted"></span><button class="btn" id="s-scan" data-i18n="s.scan"></button></span>
         </div>
       </div>
-      <div class="field two">
-        <div>
-          <label data-i18n="s.retries"></label>
-          <input id="s-retries" type="number" min="0" max="10">
+    </div>
+    <div class="st-pane" data-pane="system" hidden>
+      <div class="ssec"><h3 data-i18n="s.p.system"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15h5l1 2h6l1-2h5"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.tray.t"></span><span class="sh" data-i18n="s.tray"></span></span>
+          <span class="sc"><input type="checkbox" class="tg" id="s-tray"></span>
         </div>
-        <div></div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="language"></span><span class="sh" data-i18n="s.lang.hint"></span></span>
+          <span class="sc"><select id="s-lang"></select></span>
+        </div>
       </div>
-      <div class="field">
-        <label><span data-i18n="s.cookies"></span> <span class="muted" data-i18n="s.cookies.hint"></span></label>
-        <select id="s-cookies">
-          <option value="" data-i18n="s.none"></option>
-          <option>chrome</option><option>firefox</option><option>edge</option>
-          <option>brave</option><option>opera</option><option>vivaldi</option>
-        </select>
+    </div>
+    <div class="st-pane" data-pane="engine" hidden>
+      <div class="ssec"><h3 data-i18n="s.perf"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.conc"></span><span class="sh" data-i18n="s.conc.hint"></span></span>
+          <span class="sc"><input id="s-conc" type="number" min="1" max="8"></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.retries"></span><span class="sh" data-i18n="s.retries.hint"></span></span>
+          <span class="sc"><input id="s-retries" type="number" min="0" max="10"></span>
+        </div>
       </div>
-      <div class="field">
-        <label data-i18n="s.extra"></label>
-        <input id="s-extra" placeholder="--proxy socks5://127.0.0.1:1080" spellcheck="false">
+      <div class="ssec"><h3 data-i18n="s.net"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 0 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.country"></span><span class="sh" data-i18n="s.country.hint"></span></span>
+          <span class="sc"><input id="s-country" maxlength="2" placeholder="US"></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9 4 4 0 0 1-4-4 4 4 0 0 1-5-5z"/><path d="M8.5 11.5h.01M12 16h.01M15.5 13h.01"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.cookies"></span><span class="sh" data-i18n="s.cookies.h"></span></span>
+          <span class="sc"><select id="s-cookies"><option value="" data-i18n="s.none"></option><option>chrome</option><option>firefox</option><option>edge</option><option>brave</option><option>opera</option><option>vivaldi</option></select></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="s.extra"></span><span class="sh" data-i18n="s.extra.hint"></span></span>
+          <span class="sc wide"><input id="s-extra" placeholder="--proxy socks5://127.0.0.1:1080" spellcheck="false"></span>
+        </div>
       </div>
-
-      <h3 data-i18n="s.tools"></h3>
-      <div class="tool"><div><b>yt-dlp</b><div class="muted" id="t-ytdlp">…</div></div><div class="grow"></div><button class="btn" id="t-ytdlp-btn">Install</button></div>
-      <div class="tool"><div><b>ffmpeg</b><div class="muted" id="t-ffmpeg">…</div></div><div class="grow"></div><button class="btn" id="t-ffmpeg-btn">Install</button></div>
-
-      <h3 data-i18n="s.aboutq"></h3>
-      <p class="muted" data-i18n-html="s.aboutq.text"></p>
+    </div>
+    <div class="st-pane" data-pane="tools" hidden>
+      <div class="ssec"><h3 data-i18n="s.tools"></h3><p class="sec-hint" data-i18n="s.tools.hint"></p>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/></svg></span>
+          <span class="sm"><span class="sl">yt-dlp</span><span class="sh" id="t-ytdlp">…</span></span>
+          <span class="sc"><button class="btn" id="t-ytdlp-btn">Install</button></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/></svg></span>
+          <span class="sm"><span class="sl">ffmpeg</span><span class="sh" id="t-ffmpeg">…</span></span>
+          <span class="sc"><button class="btn" id="t-ffmpeg-btn">Install</button></span>
+        </div>
+      </div>
+    </div>
+    <div class="st-pane" data-pane="about" hidden>
+      <div class="ssec"><a class="promo" data-act="open-site" role="link" tabindex="0"><span class="promo-mark"><img src="ad-logo.svg" alt="" width="20" height="20"></span><span class="promo-body"><b data-i18n="ad.title"></b><span data-i18n="ad.text"></span></span><span class="promo-go" aria-hidden="true">&rarr;</span></a></div>
+      <div class="ssec"><h3 data-i18n="s.aboutq"></h3><p class="prose" data-i18n-html="s.aboutq.text"></p></div>
+      <div class="ssec"><h3 data-i18n="s.legal"></h3>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="doc.terms"></span><span class="sh" data-i18n="s.legal.terms"></span></span>
+          <span class="sc"><button class="btn" data-doc="terms" data-i18n="s.view"></button></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="doc.privacy"></span><span class="sh" data-i18n="s.legal.privacy"></span></span>
+          <span class="sc"><button class="btn" data-doc="privacy" data-i18n="s.view"></button></span>
+        </div>
+        <div class="srow">
+          <span class="si" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/></svg></span>
+          <span class="sm"><span class="sl" data-i18n="doc.copyright"></span><span class="sh" data-i18n="s.legal.copyright"></span></span>
+          <span class="sc"><button class="btn" data-doc="copyright" data-i18n="s.view"></button></span>
+        </div>
+      </div>
+    </div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
@@ -143,18 +200,37 @@
   <button class="icon" id="p-close" title="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
 </div>
 <div id="onboard" hidden>
-  <header class="ob-head">
+  <header class="ob-head" data-tauri-drag-region>
     <img src="logo.svg" alt="" width="22" height="22">
-    <div class="grow"></div>
+    <div class="grow" data-tauri-drag-region></div>
     <div class="sws"><button class="sw" data-sw="lang" aria-haspopup="menu" data-i18n-title="language"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></button><button class="sw" data-sw="quality" aria-haspopup="menu" data-i18n-title="quality.tip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3M6 6v11M10 3v18M14 8v7M18 5v13M22 10v3"/></svg><span class="sw-val"></span></button></div>
+    <div class="wc"></div>
   </header>
 
   <main class="ob-main">
     <div class="ob-inner">
       <section class="ob-step" data-step="0">
-        <img class="ob-big" src="logo.svg" alt="" width="56" height="56">
+        <div class="ob-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <img class="ob-big" src="logo.svg" alt="" width="64" height="64">
         <h1 data-i18n="ob.welcome.title"></h1>
         <p class="ob-lead" data-i18n="ob.welcome.sub"></p>
+        <ul class="ob-feats">
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><b data-i18n="ob.f1.t"></b><span data-i18n="ob.f1.d"></span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg><b data-i18n="ob.f2.t"></b><span data-i18n="ob.f2.d"></span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg><b data-i18n="ob.f3.t"></b><span data-i18n="ob.f3.d"></span></li>
+        </ul>
+        <div class="ob-consent">
+          <p class="ob-disc" data-i18n="ob.disc"></p>
+          <label class="ob-agree">
+            <input type="checkbox" id="ob-agree">
+            <span class="ob-box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span><span data-i18n="ob.agree"></span>
+              <a class="ob-doc" role="link" tabindex="0" data-doc="terms" data-i18n="doc.terms"></a>,
+              <a class="ob-doc" role="link" tabindex="0" data-doc="privacy" data-i18n="doc.privacy"></a>
+              <span data-i18n="ob.and"></span>
+              <a class="ob-doc" role="link" tabindex="0" data-doc="copyright" data-i18n="doc.copyright"></a></span>
+          </label>
+        </div>
       </section>
 
       <section class="ob-step" data-step="1" hidden>

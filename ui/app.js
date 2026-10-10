@@ -56,9 +56,17 @@ const tr = (...a) => t(...a); // `t` is shadowed by local vars in a few function
 const qLabel = (v) => { const q = QUALITIES.find((x) => x[0] === v)?.[1] || ""; return q.startsWith("q.") ? t(q) : q; };
 const quality = () => S.settings?.quality || "best";
 
+function movePill() {
+  const on = $("#tabs button.on"), pill = $(".nav-pill");
+  if (!on || !pill) return;
+  pill.style.width = on.offsetWidth + "px";
+  pill.style.transform = `translateX(${on.offsetLeft}px)`;
+}
+window.addEventListener("resize", movePill);
 function setTab(tab) {
   S.tab = tab;
   $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  movePill();
   for (const v of ["search", "link", "queue", "settings"]) $(`#view-${v}`).hidden = v !== tab;
   if (tab === "settings") refreshTools();
 }
@@ -490,6 +498,125 @@ function rebuildJobs() {
   updateQueueMeta();
 }
 
+// ---------- window controls (the native frame is off) ----------
+const WIN_ICON = {
+  min: '<path d="M5 12h14"/>',
+  max: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
+  restore: '<rect x="8" y="5" width="11" height="11" rx="2"/><path d="M5 9v8a2 2 0 0 0 2 2h8"/>',
+  close: '<path d="M6 6l12 12M18 6L6 18"/>',
+};
+const winSvg = (k) => `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${WIN_ICON[k]}</svg>`;
+const appWin = () => window.__TAURI__.window.getCurrentWindow();
+let winMax = false;
+function renderWinControls() {
+  const html = `<button data-w="min" title="${t("win.min")}" aria-label="${t("win.min")}">${winSvg("min")}</button>
+    <button data-w="max" title="${t(winMax ? "win.restore" : "win.max")}" aria-label="${t("win.max")}">${winSvg(winMax ? "restore" : "max")}</button>
+    <button data-w="close" class="x" title="${t("win.close")}" aria-label="${t("win.close")}">${winSvg("close")}</button>`;
+  $$(".wc").forEach((el) => (el.innerHTML = html));
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest(".wc button"); if (!b) return;
+  const w = appWin();
+  if (b.dataset.w === "min") w.minimize();
+  else if (b.dataset.w === "max") w.toggleMaximize();
+  else w.close();
+});
+async function syncWinState() {
+  try { const m = await appWin().isMaximized(); if (m !== winMax) { winMax = m; document.documentElement.classList.toggle("maxed", m); renderWinControls(); } } catch {}
+}
+try { appWin().onResized(syncWinState); } catch {}
+
+// ---------- settings navigation: branched menu (tree with drawn branches) ----------
+const BM = { row: 34, indent: 40, trunk: 14, radius: 10, pad: 6, mark: 16 };
+const mkIcon = (p) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ST_GROUPS = [
+  { id: "general", key: "s.g.general", items: [
+    { id: "downloads", key: "s.p.downloads", icon: mkIcon('<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>') },
+    { id: "system", key: "s.p.system", icon: mkIcon('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>') },
+  ] },
+  { id: "advanced", key: "s.g.advanced", items: [
+    { id: "engine", key: "s.p.engine", icon: mkIcon('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>') },
+    { id: "tools", key: "s.p.tools", icon: mkIcon('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>') },
+  ] },
+  { id: "other", key: "s.g.other", items: [
+    { id: "about", key: "s.p.about", icon: mkIcon('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>') },
+  ] },
+];
+const stOpen = new Set(ST_GROUPS.map((g) => g.id));
+let stPane = "downloads";
+const stItem = (id) => ST_GROUPS.flatMap((g) => g.items).find((i) => i.id === id);
+const bmRowY = (k) => BM.pad + k * BM.row + BM.row / 2;
+const bmR = Math.min(BM.radius, BM.row / 2 - 2), bmEnd = BM.indent - 8;
+const bmBranch = (k) => `M ${BM.trunk} ${bmRowY(k) - bmR} A ${bmR} ${bmR} 0 0 0 ${BM.trunk + bmR} ${bmRowY(k)} H ${bmEnd}`;
+const bmReach = (k) => `M ${BM.trunk} 0 V ${bmRowY(k) - bmR} A ${bmR} ${bmR} 0 0 0 ${BM.trunk + bmR} ${bmRowY(k)} H ${bmEnd}`;
+const bmLen = (k) => bmRowY(k) - bmR + (Math.PI * bmR) / 2 + (bmEnd - BM.trunk - bmR);
+
+function renderMenu() {
+  const q = $("#st-q").value.trim().toLowerCase();
+  const groups = ST_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => !q || t(i.key).toLowerCase().includes(q)) })).filter((g) => g.items.length);
+  $("#st-none").hidden = groups.length > 0;
+  $("#st-menu").innerHTML = `<div class="bm"><span class="bm-marker" aria-hidden="true"></span>${groups.map((g) => {
+    const h = BM.pad * 2 + g.items.length * BM.row;
+    const open = q || stOpen.has(g.id);
+    return `<div class="bm-section" data-g="${g.id}" ${open ? "data-open" : ""}>
+      <button class="bm-head" aria-expanded="${!!open}" data-g="${g.id}">${esc(t(g.key))}</button>
+      <div class="bm-body"><div class="bm-fold"><div class="bm-tree" style="height:${h}px">
+        <svg class="bm-lines" width="${BM.indent}" height="${h}" aria-hidden="true">
+          <path class="bm-base" d="M ${BM.trunk} 0 V ${bmRowY(g.items.length - 1) - bmR} ${g.items.map((_, k) => bmBranch(k)).join(" ")}"/>
+          ${g.items.map((i, k) => `<path class="bm-reach" d="${bmReach(k)}" data-len="${bmLen(k)}" data-id="${i.id}" style="stroke-dasharray:${bmLen(k)};stroke-dashoffset:${i.id === stPane ? 0 : bmLen(k)}"/>`).join("")}
+        </svg>
+        ${g.items.map((i) => `<button class="bm-item" data-pane="${i.id}" ${i.id === stPane ? "data-active" : ""} tabindex="${open ? 0 : -1}"><span class="bm-icon">${i.icon}</span><span class="bm-label">${esc(t(i.key))}</span></button>`).join("")}
+      </div></div></div></div>`;
+  }).join("")}</div>`;
+  placeMarker(false);
+}
+function placeMarker(glide) {
+  const m = $(".bm-marker"); if (!m) return;
+  const g = ST_GROUPS.find((x) => x.items.some((i) => i.id === stPane));
+  const sec = g && $(`.bm-section[data-g="${g.id}"]`);
+  const head = sec?.querySelector(".bm-head");
+  const on = sec && sec.hasAttribute("data-open") && head;
+  if (!glide) m.style.transition = "none";
+  if (on) m.style.top = head.offsetTop + (head.offsetHeight - BM.mark) / 2 + "px";
+  m.toggleAttribute("data-on", !!on);
+  if (!glide) { void m.offsetHeight; m.style.transition = ""; }
+}
+function setPane(id) {
+  stPane = id;
+  $$(".bm-item").forEach((b) => b.toggleAttribute("data-active", b.dataset.pane === id));
+  $$(".bm-reach").forEach((p) => (p.style.strokeDashoffset = p.dataset.id === id ? 0 : p.dataset.len));
+  placeMarker(true);
+  $$(".st-pane").forEach((p) => {
+    const on = p.dataset.pane === id;
+    p.hidden = !on;
+    if (on) { p.classList.remove("enter"); void p.offsetWidth; p.classList.add("enter"); }
+  });
+  const it = stItem(id);
+  $("#st-title").innerHTML = it ? it.icon + `<span>${esc(t(it.key))}</span>` : "";
+}
+const filterSettings = renderMenu;
+$("#st-q").addEventListener("input", renderMenu);
+$("#st-menu").addEventListener("click", (e) => {
+  const head = e.target.closest(".bm-head");
+  if (head) {
+    const sec = head.parentElement, g = head.dataset.g;
+    const open = !sec.hasAttribute("data-open");
+    sec.toggleAttribute("data-open", open);
+    head.setAttribute("aria-expanded", String(open));
+    sec.querySelectorAll(".bm-item").forEach((b) => (b.tabIndex = open ? 0 : -1));
+    open ? stOpen.add(g) : stOpen.delete(g);
+    return placeMarker(true);
+  }
+  const b = e.target.closest(".bm-item"); if (b) setPane(b.dataset.pane);
+});
+$("#st-q").addEventListener("input", filterSettings);
+function fillLangSelect() {
+  const sel = $("#s-lang");
+  sel.innerHTML = LANGS.map(([c, n]) => `<option value="${c}">${esc(n)}</option>`).join("");
+  sel.value = LANG;
+}
+$("#s-lang").addEventListener("change", (e) => setLang(e.target.value));
+
 // ---------- settings & tools ----------
 function loadSettingsUi() {
   const s = S.settings;
@@ -726,6 +853,11 @@ document.addEventListener("click", (e) => { const b = e.target.closest(".sw"); i
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
 function renderAll() {
   applyI18n();
+  fillLangSelect();
+  setPane(stPane);
+  filterSettings();
+  renderWinControls();
+  movePill();
   syncSwitchers();
   obRender();
   if (S.results !== "loading") renderSearch();
@@ -746,8 +878,10 @@ const SITE = "https://mpthree.fun";
 function openSite() {
   window.__TAURI__.opener.openUrl(SITE).catch((e) => toast(errText(e)));
 }
-$("#ad").addEventListener("keydown", (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), openSite()));
-$("#ad-x").addEventListener("click", (e) => { e.stopPropagation(); $("#ad").hidden = true; });
+document.addEventListener("keydown", (e) => {
+  const a = e.target.closest?.('[data-act="open-site"]');
+  if (a && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openSite(); }
+});
 
 // ---------- onboarding ----------
 function finishOnboarding() {
@@ -755,22 +889,30 @@ function finishOnboarding() {
   S.settings.onboarded = true;
   saveSettings();
 }
-let obStep = 0, obMode = "artist";
+let obStep = 0, obMode = "artist", obConsentOnly = false;
+const DOC_BASE = "https://mpthreedl.vercel.app/";
+function openDoc(name) { window.__TAURI__.opener.openUrl(DOC_BASE + name).catch((e) => toast(errText(e))); }
+document.addEventListener("click", (e) => { const a = e.target.closest("[data-doc]"); if (a) { e.preventDefault(); openDoc(a.dataset.doc); } });
+document.addEventListener("keydown", (e) => { const a = e.target.closest?.("[data-doc]"); if (a && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDoc(a.dataset.doc); } });
 function obRender() {
   $$(".ob-step").forEach((el) => (el.hidden = Number(el.dataset.step) !== obStep));
   $$("#ob-dots li").forEach((li, i) => li.classList.toggle("on", i === obStep));
+  $("#ob-dots").hidden = obConsentOnly;
   $("#ob-back").hidden = obStep === 0;
   $("#ob-skip").hidden = obStep === 0;
   const p = $("#ob-primary");
   p.hidden = obStep === 1 && obMode === "artist"; // artists are picked straight from the list
-  p.textContent = obStep === 0 ? t("ob.start") : t("ob.go");
+  p.textContent = obStep === 0 ? t(obConsentOnly ? "ob.continue" : "ob.start") : t("ob.go");
+  p.disabled = obStep === 0 && !$("#ob-agree").checked;
 }
 function obGo(n) {
   obStep = n;
   obRender();
   if (n === 1) (obMode === "artist" ? $("#ob-q") : $("#ob-in")).focus();
 }
+$("#ob-agree").addEventListener("change", obRender);
 function showOnboarding() {
+  obConsentOnly = S.settings.onboarded; // existing users only need to accept the documents
   $("#ob-dir").textContent = S.settings.output_dir;
   $("#onboard").hidden = false;
   obRender();
@@ -815,7 +957,14 @@ function obFetch() {
   $("#link-in").value = text;
   fetchLinks();
 }
-$("#ob-primary").addEventListener("click", () => (obStep === 0 ? obGo(1) : obFetch()));
+$("#ob-primary").addEventListener("click", () => {
+  if (obStep !== 0) return obFetch();
+  if (!$("#ob-agree").checked) return;
+  S.settings.accepted_terms = true;
+  if (obConsentOnly) return finishOnboarding();
+  saveSettings();
+  obGo(1);
+});
 $("#ob-back").addEventListener("click", () => obGo(0));
 $("#ob-in").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); obFetch(); } });
 $("#ob-skip").addEventListener("click", finishOnboarding);
@@ -823,7 +972,7 @@ $("#ob-change").addEventListener("click", async () => {
   const dir = await window.__TAURI__.dialog.open({ directory: true, defaultPath: S.settings.output_dir });
   if (dir) { S.settings.output_dir = dir; $("#s-dir").value = dir; $("#ob-dir").textContent = dir; saveSettings(); }
 });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#onboard").hidden) finishOnboarding(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#onboard").hidden && S.settings.accepted_terms) finishOnboarding(); });
 
 // ---------- boot ----------
 (async function init() {
@@ -831,11 +980,18 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#onb
   LANG = DICT[S.settings.language] ? S.settings.language : detectLang();
   loadSettingsUi();
   applyI18n();
+  fillLangSelect();
+  renderMenu();
+  setPane("downloads");
+  renderWinControls();
+  syncWinState();
+  document.fonts?.ready.then(movePill);
+  movePill();
   syncSwitchers();
   (await invoke("list_jobs")).forEach((v) => S.jobs.set(v.id, v));
   rebuildJobs();
   renderSearch();
   refreshTools();
-  if (!S.settings.onboarded) showOnboarding();
+  if (!S.settings.onboarded || !S.settings.accepted_terms) showOnboarding();
   else $("#q").focus();
 })();

@@ -74,6 +74,9 @@ fn saved_path(app: &AppHandle) -> Option<PathBuf> {
 
 /// Writes the queue to disk so it survives closing the app.
 fn persist(app: &AppHandle) {
+    if crate::settings::is_fake_start() {
+        return;
+    }
     let saved = {
         let st = app.state::<AppState>();
         let q = st.queue.lock().unwrap();
@@ -93,6 +96,9 @@ fn persist(app: &AppHandle) {
 
 /// Restores the previous session's queue; unfinished jobs go back to "queued".
 pub fn restore(app: &AppHandle) {
+    if crate::settings::is_fake_start() {
+        return;
+    }
     let Some(saved) = saved_path(app)
         .and_then(|p| std::fs::read_to_string(p).ok())
         .and_then(|t| serde_json::from_str::<Saved>(&t).ok())

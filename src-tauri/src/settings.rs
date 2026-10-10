@@ -16,6 +16,7 @@ pub struct Settings {
     pub skip_existing: bool,
     pub close_to_tray: bool,
     pub onboarded: bool,
+    pub accepted_terms: bool,
     pub language: String,
 }
 
@@ -33,6 +34,7 @@ impl Default for Settings {
             skip_existing: true,
             close_to_tray: false,
             onboarded: false,
+            accepted_terms: false,
             language: String::new(),
         }
     }
@@ -42,7 +44,16 @@ fn path(app: &AppHandle) -> Option<std::path::PathBuf> {
     app.path().app_config_dir().ok().map(|p| p.join("settings.json"))
 }
 
+/// True when launched with `--fake-start` (alias `--new-user`): behaves like a first launch
+/// and never reads or writes the real settings / queue files.
+pub fn is_fake_start() -> bool {
+    std::env::args().any(|a| a == "--fake-start" || a == "--new-user")
+}
+
 pub fn load(app: &AppHandle) -> Settings {
+    if is_fake_start() {
+        return Settings::default();
+    }
     path(app)
         .and_then(|p| fs::read_to_string(p).ok())
         .and_then(|t| serde_json::from_str(&t).ok())
@@ -50,6 +61,9 @@ pub fn load(app: &AppHandle) -> Settings {
 }
 
 pub fn save(app: &AppHandle, s: &Settings) {
+    if is_fake_start() {
+        return;
+    }
     if let Some(p) = path(app) {
         if let Some(d) = p.parent() {
             let _ = fs::create_dir_all(d);

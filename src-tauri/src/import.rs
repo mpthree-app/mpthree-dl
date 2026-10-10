@@ -120,7 +120,7 @@ async fn spotify_playlist_full(app: &AppHandle, id: &str, token: &str) -> Result
                 hash = spotify_hash(app, id).await;
                 continue;
             }
-            return Err("Spotify query failed".into());
+            return Err("Service query failed".into());
         }
         let items = pl["content"]["items"].as_array().cloned().unwrap_or_default();
         let total = pl["content"]["totalCount"].as_u64().unwrap_or(0) as usize;
@@ -163,21 +163,21 @@ async fn spotify(app: &AppHandle, url: &str) -> Result<L, String> {
         url = follow(app, &url).await;
     }
     let re = Regex::new(r"spotify\.com/(?:intl-[a-z-]+/)?(playlist|album|track|artist|show|episode)/([A-Za-z0-9]+)").unwrap();
-    let c = re.captures(&url).ok_or("Unrecognised Spotify link")?;
+    let c = re.captures(&url).ok_or("Unrecognised link")?;
     let (kind, id) = (&c[1], &c[2]);
     if kind != "playlist" && kind != "album" && kind != "track" {
-        return Err("Only Spotify playlists, albums and tracks are supported. For an artist, use Search > Catalog.".into());
+        return Err("Only playlists, albums and tracks are supported. For an artist, use Search > Catalog.".into());
     }
     let html = get_text(app, &format!("https://open.spotify.com/embed/{kind}/{id}"), &[]).await?;
     let start = html
         .find("id=\"__NEXT_DATA__\"")
         .and_then(|i| html[i..].find('>').map(|j| i + j + 1))
-        .ok_or("Spotify page had no data (is the playlist public?)")?;
-    let end = html[start..].find("</script>").ok_or("bad Spotify page")? + start;
+        .ok_or("Service page had no data (is the playlist public?)")?;
+    let end = html[start..].find("</script>").ok_or("bad page")? + start;
     let v: Value = serde_json::from_str(&html[start..end]).map_err(|e| e.to_string())?;
     let e = &v["props"]["pageProps"]["state"]["data"]["entity"];
     if e.is_null() {
-        return Err("Spotify returned no data for this link (private or removed?)".into());
+        return Err("The service returned no data for this link (private or removed?)".into());
     }
     let title = if e["name"].is_string() { s(&e["name"]) } else { s(&e["title"]) };
     let art = s(&e["coverArt"]["sources"][0]["url"]);
@@ -215,12 +215,12 @@ async fn spotify(app: &AppHandle, url: &str) -> Result<L, String> {
         let token = v["props"]["pageProps"]["state"]["settings"]["session"]["accessToken"].as_str().unwrap_or("");
         match spotify_playlist_full(app, id, token).await {
             Ok(full) if full.len() >= tracks.len() && !full.is_empty() => tracks = full,
-            _ if tracks.len() >= 100 => note = "Only the first 100 tracks could be read from Spotify this time.".into(),
+            _ if tracks.len() >= 100 => note = "Only the first 100 tracks could be read from the service this time.".into(),
             _ => {}
         }
     }
     Ok(L {
-        source: "Spotify",
+        source: "Streaming service",
         title,
         owner: clean(&s(&e["subtitle"])),
         tracks,
@@ -236,12 +236,12 @@ async fn deezer(app: &AppHandle, url: &str) -> Result<L, String> {
         url = follow(app, &url).await;
     }
     let re = Regex::new(r"deezer\.com/(?:[a-z]{2}(?:-[a-z]{2})?/)?(playlist|album|track)/(\d+)").unwrap();
-    let c = re.captures(&url).ok_or("Unrecognised Deezer link")?;
+    let c = re.captures(&url).ok_or("Unrecognised link")?;
     let (kind, id) = (c[1].to_string(), c[2].to_string());
     let api = |p: &str| format!("https://api.deezer.com/{p}");
     let check = |v: &Value| -> Result<(), String> {
         if v["error"].is_object() {
-            Err(format!("Deezer: {}", s(&v["error"]["message"])))
+            Err(format!("Service: {}", s(&v["error"]["message"])))
         } else {
             Ok(())
         }
@@ -257,7 +257,7 @@ async fn deezer(app: &AppHandle, url: &str) -> Result<L, String> {
         let t = get_json(app, &api(&format!("track/{id}")), &[]).await?;
         check(&t)?;
         let tr = map(&t, "", "");
-        return Ok(L { source: "Deezer", title: tr.title.clone(), owner: tr.artist.clone(), tracks: vec![tr], note: String::new() });
+        return Ok(L { source: "Streaming service", title: tr.title.clone(), owner: tr.artist.clone(), tracks: vec![tr], note: String::new() });
     }
     let meta = get_json(app, &api(&format!("{kind}/{id}")), &[]).await?;
     check(&meta)?;
@@ -278,7 +278,7 @@ async fn deezer(app: &AppHandle, url: &str) -> Result<L, String> {
         }
     }
     let owner = if kind == "album" { s(&meta["artist"]["name"]) } else { s(&meta["creator"]["name"]) };
-    Ok(L { source: "Deezer", title: s(&meta["title"]), owner, tracks, note: String::new() })
+    Ok(L { source: "Streaming service", title: s(&meta["title"]), owner, tracks, note: String::new() })
 }
 
 // ---------------- Tidal (web API with the public web token) ----------------
@@ -289,16 +289,16 @@ async fn tidal_get(app: &AppHandle, path: &str) -> Result<Value, String> {
     let cc = app.state::<AppState>().settings.lock().unwrap().country.clone();
     let sep = if path.contains('?') { '&' } else { '?' };
     let url = format!("https://api.tidal.com/v1/{path}{sep}countryCode={cc}");
-    let mut last = "Tidal refused the request".to_string();
+    let mut last = "The service refused the request".to_string();
     for tok in TIDAL_TOKENS {
         let r = get(app, &url, &[("x-tidal-token", tok)]).await?;
         let status = r.status();
         if status.as_u16() == 401 || status.as_u16() == 403 {
             continue;
         }
-        let v: Value = r.json().await.map_err(|e| format!("unexpected Tidal response: {e}"))?;
+        let v: Value = r.json().await.map_err(|e| format!("unexpected response: {e}"))?;
         if v["status"].as_u64().map_or(false, |x| x >= 400) {
-            last = format!("Tidal: {}", s(&v["userMessage"]));
+            last = format!("Service: {}", s(&v["userMessage"]));
             return Err(last);
         }
         return Ok(v);
@@ -327,12 +327,12 @@ fn tidal_track(t: &Value) -> T {
 
 async fn tidal(app: &AppHandle, url: &str) -> Result<L, String> {
     let re = Regex::new(r"tidal\.com/(?:browse/)?(playlist|album|track)/([A-Za-z0-9-]+)").unwrap();
-    let c = re.captures(url).ok_or("Unrecognised Tidal link")?;
+    let c = re.captures(url).ok_or("Unrecognised link")?;
     let (kind, id) = (c[1].to_string(), c[2].to_string());
     if kind == "track" {
         let t = tidal_get(app, &format!("tracks/{id}")).await?;
         let tr = tidal_track(&t);
-        return Ok(L { source: "Tidal", title: tr.title.clone(), owner: tr.artist.clone(), tracks: vec![tr], note: String::new() });
+        return Ok(L { source: "Streaming service", title: tr.title.clone(), owner: tr.artist.clone(), tracks: vec![tr], note: String::new() });
     }
     let base = format!("{kind}s/{id}");
     let meta = tidal_get(app, &base).await?;
@@ -355,7 +355,7 @@ async fn tidal(app: &AppHandle, url: &str) -> Result<L, String> {
         }
     }
     let owner = if kind == "album" { s(&meta["artist"]["name"]) } else { s(&meta["creator"]["name"]) };
-    Ok(L { source: "Tidal", title: s(&meta["title"]), owner, tracks, note: String::new() })
+    Ok(L { source: "Streaming service", title: s(&meta["title"]), owner, tracks, note: String::new() })
 }
 
 // ---------------- Apple Music ----------------
@@ -381,18 +381,18 @@ async fn apple(app: &AppHandle, url: &str) -> Result<L, String> {
     if let Some(i) = Regex::new(r"[?&]i=(\d+)").unwrap().captures(url) {
         let tr = catalog::lookup_tracks(app, &[i[1].parse().unwrap_or(0)], &cc).await?;
         let t = from_catalog(tr.into_iter().next().ok_or("Song not found in this storefront")?);
-        return Ok(L { source: "Apple Music", title: t.title.clone(), owner: t.artist.clone(), tracks: vec![t], note: String::new() });
+        return Ok(L { source: "Streaming service", title: t.title.clone(), owner: t.artist.clone(), tracks: vec![t], note: String::new() });
     }
     if url.contains("/song/") {
-        let id = ids(url).pop().ok_or("Unrecognised Apple Music link")?;
+        let id = ids(url).pop().ok_or("Unrecognised link")?;
         let t = from_catalog(catalog::lookup_tracks(app, &[id], &cc).await?.into_iter().next().ok_or("Song not found")?);
-        return Ok(L { source: "Apple Music", title: t.title.clone(), owner: t.artist.clone(), tracks: vec![t], note: String::new() });
+        return Ok(L { source: "Streaming service", title: t.title.clone(), owner: t.artist.clone(), tracks: vec![t], note: String::new() });
     }
     if url.contains("/album/") {
-        let id = ids(url).pop().ok_or("Unrecognised Apple Music link")?;
+        let id = ids(url).pop().ok_or("Unrecognised link")?;
         let (rel, tracks) = catalog::fetch_release(app, id).await?;
         return Ok(L {
-            source: "Apple Music",
+            source: "Streaming service",
             title: rel.name,
             owner: rel.artist,
             tracks: tracks.into_iter().map(from_catalog).collect(),
@@ -400,7 +400,7 @@ async fn apple(app: &AppHandle, url: &str) -> Result<L, String> {
         });
     }
     if !url.contains("/playlist/") {
-        return Err("Only Apple Music playlists, albums and songs are supported.".into());
+        return Err("Only playlists, albums and songs are supported.".into());
     }
     let html = get_text(app, url, &[]).await?;
     let re = Regex::new(r#"(?s)<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>"#).unwrap();
@@ -408,7 +408,7 @@ async fn apple(app: &AppHandle, url: &str) -> Result<L, String> {
         .captures_iter(&html)
         .filter_map(|c| serde_json::from_str::<Value>(&c[1]).ok())
         .find(|v| v["track"].is_array())
-        .ok_or("Could not read this Apple Music playlist (is it public?)")?;
+        .ok_or("Could not read this playlist (is it public?)")?;
     let list = ld["track"].as_array().cloned().unwrap_or_default();
     let mut found: std::collections::HashMap<u64, catalog::Track> = Default::default();
     let all: Vec<u64> = list.iter().filter_map(|t| ids(&s(&t["url"])).pop()).collect();
@@ -425,7 +425,7 @@ async fn apple(app: &AppHandle, url: &str) -> Result<L, String> {
         })
         .collect();
     Ok(L {
-        source: "Apple Music",
+        source: "Streaming service",
         title: s(&ld["name"]),
         owner: s(&ld["author"]["name"]),
         tracks,
@@ -460,7 +460,7 @@ async fn yandex(app: &AppHandle, url: &str) -> Result<L, String> {
     let fail = |v: &Value| -> Result<(), String> {
         if v["error"].is_object() {
             Err(format!(
-                "Yandex Music refused the request ({}). It may be blocked in your region or the playlist is private.",
+                "The service refused the request ({}). It may be blocked in your region or the playlist is private.",
                 s(&v["error"]["name"])
             ))
         } else {
@@ -510,13 +510,13 @@ async fn yandex(app: &AppHandle, url: &str) -> Result<L, String> {
         fail(&v)?;
         tracks = v["result"].as_array().map(|a| a.iter().map(yandex_track).collect()).unwrap_or_default();
     } else {
-        return Err("Unrecognised Yandex Music link (playlist, album or track expected).".into());
+        return Err("Unrecognised link (playlist, album or track expected).".into());
     }
     if title.is_empty() {
         title = tracks.first().map(|t| t.title.clone()).unwrap_or_default();
         owner = tracks.first().map(|t| t.artist.clone()).unwrap_or_default();
     }
-    Ok(L { source: "Yandex Music", title, owner, tracks, note: String::new() })
+    Ok(L { source: "Streaming service", title, owner, tracks, note: String::new() })
 }
 
 async fn yandex_playlist(app: &AppHandle, r: &Value, h: &[(&str, &str); 2]) -> Result<L, String> {
@@ -548,7 +548,7 @@ async fn yandex_playlist(app: &AppHandle, r: &Value, h: &[(&str, &str); 2]) -> R
         tracks.extend(v["result"].as_array().map(|a| a.iter().map(yandex_track).collect::<Vec<_>>()).unwrap_or_default());
     }
     Ok(L {
-        source: "Yandex Music",
+        source: "Streaming service",
         title: s(&r["title"]),
         owner: if r["owner"]["name"].is_string() { s(&r["owner"]["name"]) } else { s(&r["owner"]["login"]) },
         tracks,
